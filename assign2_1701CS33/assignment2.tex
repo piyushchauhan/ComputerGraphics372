@@ -1,0 +1,182 @@
+\documentclass[a4paper, 11pt]{article}
+\usepackage{fullpage} % changes the margin
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{subfig}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{graphics}
+\usepackage{caption}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{
+  frame=tb,
+  %language=C++,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=4
+}
+
+\graphicspath{./}
+
+\begin{document}
+%Header-Make sure you update this information!!!!
+\noindent
+{\Huge\textbf{Graphics Assignment - 2}} \\ \\
+\Large Arya Das (1701CS11) \hfill 22.01.2020\\
+
+\section*{Introduction}
+In this assignment we were taught two variants of a line drawing algorithm. The algorithm is Digital Differential Analyzer or DDA. The two variants taught were Symmetric DDA and Simple DDA.
+
+\section*{Procedure}
+DDA is a simple algorithm. We break down the line into large number of steps. We proceed by $\Delta x$ in $x$-axis and $\Delta y$ in $y$-axis and plot the point. We do this until the end of the line is reached.
+
+The main problem in this algorithm is choosing the step size. If we choose a small step size we repeat many pixels and waste time. If we choose a large step size we skip many pixels. The difference between the two variants of DDA is about the step size. In symmetric DDA we divide the differences by 2 until each of them is less than 1. In simple DDA we scale the differences until the largest difference is 1.
+
+\section*{Symmetric DDA}
+\subsection*{Code}
+\begin{lstlisting}[language=C++]
+#include<GL/glut.h>
+#include<iostream>
+
+float x1 = -30, y1 = -20, x2 = 120, y2 = 90;
+float dx, dy;
+
+void preprocess() {
+    float Dx = x2-x1;
+    float Dy = y2-y1;
+
+    while(abs(Dx)>1 || abs(Dy)>1) {
+        Dx/=2;
+        Dy/=2;
+    }
+    
+    dx = Dx;
+    dy = Dy;
+}
+
+void display() {
+    preprocess();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glBegin(GL_POINTS);
+        glColor3f(1.0f, 0.0f, 0.0f);
+        
+        float m = x1, n = y1;
+        while(abs(x2-m)>5) {
+            glVertex2i((GLint)m,(GLint)n);
+            m = m+dx;
+            n = n+dy;
+        }
+        
+    glEnd();
+    glFlush();
+}
+
+void reshape(int w, int h) {
+    glViewport(0,0,(GLsizei)w,(GLsizei)h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(-160,160,-160,160);
+    glMatrixMode(GL_MODELVIEW);
+}
+ 
+int main(int argc, char** argv) {
+   glutInit(&argc, argv);
+   glutCreateWindow("Symmetric");
+   glutInitWindowSize(320, 320);
+   glutInitWindowPosition(50, 50);
+   glutDisplayFunc(display);
+   glutReshapeFunc(reshape);
+   glutMainLoop();
+   return 0;
+}
+\end{lstlisting}
+
+\subsection*{Output}
+\begin{center}
+\includegraphics[width=0.48\textwidth]{symmetric_dda.png}
+\captionof{figure}{Symmetric DDA}
+\end{center}
+
+\section*{Simple DDA}
+\subsection*{Code}
+\begin{lstlisting}[language=C++]
+#include<GL/glut.h>
+#include<algorithm>
+#include<iostream>
+
+float x1 = 30, y1 = -20, x2 = -120, y2 = 90;
+float dx, dy;
+
+void preprocess() {
+    float Dx = x2-x1;
+    float Dy = y2-y1;
+    
+    dx = Dx/std::max(abs(Dx),abs(Dy));
+    dy = Dy/std::max(abs(Dx),abs(Dy));
+}
+
+void display() {
+    preprocess();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glBegin(GL_POINTS);
+        glColor3f(1.0f, 0.0f, 0.0f);
+        
+        float m = x1, n = y1;
+        while(abs(x2-m)>5) {
+            glVertex2i((GLint)m,(GLint)n);
+            m = m+dx;
+            n = n+dy;
+        }        
+    glEnd();
+
+    glFlush();
+}
+
+void reshape(int w, int h) {
+    glViewport(0,0,(GLsizei)w,(GLsizei)h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(-160,160,-160,160);
+    glMatrixMode(GL_MODELVIEW);
+}
+ 
+int main(int argc, char** argv) {
+   glutInit(&argc, argv);
+   glutCreateWindow("Simple");
+   glutInitWindowSize(320, 320);
+   glutInitWindowPosition(50, 50);
+   glutDisplayFunc(display);
+   glutReshapeFunc(reshape);
+   glutMainLoop();
+   return 0;
+}
+\end{lstlisting}
+
+\subsection*{Output}
+\begin{center}
+\includegraphics[width=0.48\textwidth]{simple_dda.png}
+\captionof{figure}{Simple DDA}
+\end{center}
+\end{document}
